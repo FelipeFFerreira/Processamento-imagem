@@ -14,13 +14,14 @@ void print_data(unsigned char * data, unsigned int len)
 	for (i = 15; i < len; i++, k++) {
 		if (k < 2) printf("%d,  ", data[i]);
 		else {
-			printf("%d\n", data[i]);
+			printf("%d: ", data[i]);
 			k = -1;
 		}
+		if (i % 512 == 0) printf("\n");
 	}
 }
 
-FILE *open_arquivo(char * str, char * modo) {
+FILE * open_arquivo(char * str, char * modo) {
 
     FILE * arq; //Arquivo lógico
     if ((arq = fopen(str, modo)) == NULL) {
@@ -120,9 +121,47 @@ unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img)
 	return data_aux;
 }
 
-void tonalidade_toggle_gray(unsigned char * data, unsigned int len_img)
+
+unsigned char * inverte_image(unsigned char * data, unsigned int len_img)
 {
-	printf("Aplicando tonalidade gray!\n");
+	unsigned char * data_aux;
+	data_aux =  (unsigned char *) malloc(sizeof(unsigned char) * len_img);
+	if (data_aux == NULL) {
+		printf("Erro na alocação da memória\n");
+		exit(1);
+	}
+
+	config_params_date_aux(data_aux, data, len_img);
+
+	printf("Aplicando inverte_image!\n");
+
+	#ifdef INSTALL_OMP
+        #pragma omp parallel for
+	#endif
+	for (unsigned int i = len_img, j = 15; i > 14; i--, j++)
+	{
+		data_aux[j] = data[i];
+	}
+
+	return data_aux;
+
+
+}
+
+unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img)
+{
+	
+	unsigned char * data_aux;
+	data_aux =  (unsigned char *) malloc(sizeof(unsigned char) * len_img);
+	if (data_aux == NULL) {
+		printf("Erro na alocação da memória\n");
+		exit(1);
+	}
+
+	config_params_date_aux(data_aux, data, len_img);
+
+	printf("Aplicando tonalidade gray toogle!\n");
+
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
@@ -132,31 +171,32 @@ void tonalidade_toggle_gray(unsigned char * data, unsigned int len_img)
 
 	for (i = 15; i < len_img; i += 3) {
 		
-		//if (i % (512 * 3) == 0) printf("multiplos %d = %d\n", 512 * 3, i);
 		if (state_linha) {
-			data[i] = (int) ((0.299 * data[i]) + (0.587 * data[i + 1]) + (0.144 * data[i + 2])); //calcula o valor para conversão
-			data[i + 1] = data[i]; //copia o valor para
-			data[i + 2] = data[i];  //todas componentes
+			data_aux[i] = (int) ((0.1037 * data[i]) + (0.810 * data[i + 1]) + (0.790 * data[i + 2])); //calcula o valor para conversão
+			data_aux[i + 1] = data_aux[i]; //copia o valor para
+			data_aux[i + 2] = data_aux[i];  //todas componentes
 	        
-	        if (data[i] > 255) {
-	            data[i] = 255;
-	            data[i + 1] = 255;
-	            data[i + 2] = 255;
+	        if (data_aux[i] > 255) {
+	            data_aux[i] = 255;
+	            data_aux[i + 1] = 255;
+	            data_aux[i + 2] = 255;
 			}
 
-			printf("impar i =%d\n", i);
+			//printf("impar i =%d\n", i);
 			if ((i + 3) % (512 * 3) == 0) {
 				state_linha = false;
 				//printf("TROCA\n");
 			}
 		}
 		else {
-			printf("par i =%d\n", i);
+			//printf("par i =%d\n", i);
 			if ((i + 3) % (512 * 3) == 0) {
 				state_linha = true;
 			}
 		}
 	}
+
+	return data_aux;
 }
 
 
@@ -166,12 +206,20 @@ int main(int argc, char const *argv[])
 	char path_arq_ppm[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial.ppm";
 	char path_arq_ppm_out_gray[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial_gray.ppm";
 	char path_arq_ppm_out_gray_toggle[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial_toggle.ppm";
+	char path_arq_ppm_out_inverte[] = "/home/felipe/GitHub/Processamento-imagem/imgs/inverte.ppm";
 	unsigned long len_fptr;
-	unsigned char* datas;
+	unsigned char * datas;
 
 	datas = read_image_input(path_arq_ppm, &len_fptr);
-	unsigned char * data_gray = tonalidade_gray(datas, len_fptr);
-	grava_arquivo(path_arq_ppm_out_gray, data_gray, len_fptr);
+	//print_data(datas, len_fptr);
 
+	unsigned char * data_gray = tonalidade_gray(datas, len_fptr);
+	unsigned char * data_gray_toggle = tonalidade_toggle_gray(datas, len_fptr);
+	unsigned char * data_inverte = inverte_image(datas, len_fptr);
+
+	grava_arquivo(path_arq_ppm_out_gray, data_gray, len_fptr);
+	grava_arquivo(path_arq_ppm_out_gray_toggle, data_gray_toggle, len_fptr);
+	grava_arquivo(path_arq_ppm_out_inverte, data_inverte, len_fptr);
+	
 	return 0;
 }
