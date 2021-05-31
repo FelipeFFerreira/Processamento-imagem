@@ -159,7 +159,7 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	for (unsigned int i = 15; i < len_img; i += 3) {
 
 		if (state_linha) {
-			data_aux[i] = (int) ((0.1037 * data[i]) + (0.810 * data[i + 1]) + (0.790 * data[i + 2])); //calcula o valor para conversão
+			data_aux[i] = (int) ((0.299 * data[i]) + (0.587 * data[i + 1]) + (0.144 * data[i + 2])); //calcula o valor para conversão
 			data_aux[i + 1] = data_aux[i]; //copia o valor para
 			data_aux[i + 2] = data_aux[i];  //todas componentes
 
@@ -169,14 +169,12 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	            data_aux[i + 2] = 255;
 			}
 
-			//printf("impar i =%d\n", i);
 			if ((i + 3) % (512 * 3) == 0) {
 				state_linha = false;
 				//printf("TROCA\n");
 			}
 		}
 		else {
-			//printf("par i =%d\n", i);
 			if ((i + 3) % (512 * 3) == 0) {
 				state_linha = true;
 			}
