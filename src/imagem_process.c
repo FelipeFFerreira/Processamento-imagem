@@ -52,7 +52,7 @@ void grava_arquivo(char * path, unsigned char * ptr, int tamanho)
 	printf("Erro na gravacao do arquivo!\n");
 	exit(1);
     } else
-	printf("Gravacao realizada com sucesso! (%ld)\n", qtd_bytes_gravados);	
+	printf("Gravacao realizada com sucesso! (%ld)\n", qtd_bytes_gravados);
 }
 
 unsigned char * read_image_input(char * _arq, unsigned long * _len_fptr)
@@ -97,14 +97,11 @@ unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img)
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
-	int i, j;
-	bool state_linha = true;
-
-	for (i = 15; i < len_img; i += 3) {
+	for (unsigned int i = 15; i < len_img; i += 3) {
 		data_aux[i] = (int) ((0.299 * data[i]) + (0.587 * data[i + 1]) + (0.144 * data[i + 2])); //calcula o valor para conversão
 		data_aux[i + 1] = data_aux[i]; //copia o valor para
 		data_aux[i + 2] = data_aux[i];  //todas componentes
-        
+
         if (data_aux[i] > 255) {
             data_aux[i] = 255;
             data_aux[i + 1] = 255;
@@ -143,7 +140,7 @@ unsigned char * inverte_image(unsigned char * data, unsigned int len_img)
 
 unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img)
 {
-	
+
 	unsigned char * data_aux;
 	data_aux =  (unsigned char *) malloc(sizeof(unsigned char) * len_img);
 	if (data_aux == NULL) {
@@ -158,16 +155,14 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
-	int i, j;
 	bool state_linha = true;
+	for (unsigned int i = 15; i < len_img; i += 3) {
 
-	for (i = 15; i < len_img; i += 3) {
-		
 		if (state_linha) {
 			data_aux[i] = (int) ((0.1037 * data[i]) + (0.810 * data[i + 1]) + (0.790 * data[i + 2])); //calcula o valor para conversão
 			data_aux[i + 1] = data_aux[i]; //copia o valor para
 			data_aux[i + 2] = data_aux[i];  //todas componentes
-	        
+
 	        if (data_aux[i] > 255) {
 	            data_aux[i] = 255;
 	            data_aux[i + 1] = 255;
