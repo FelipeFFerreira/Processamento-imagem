@@ -1,12 +1,5 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "imagem_process.h"
 
-#define INSTALL_OMP //Install_openmp
-#ifdef INSTALL_OMP
-	#include <omp.h>
-#endif // INSTALL_OMP
 
 void print_data(unsigned char * data, unsigned int len)
 {
@@ -165,7 +158,6 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
-	
 	int i, j;
 	bool state_linha = true;
 
@@ -197,29 +189,4 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	}
 
 	return data_aux;
-}
-
-
-
-int main(int argc, char const *argv[])
-{
-	char path_arq_ppm[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial.ppm";
-	char path_arq_ppm_out_gray[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial_gray.ppm";
-	char path_arq_ppm_out_gray_toggle[] = "/home/felipe/GitHub/Processamento-imagem/imgs/memorial_toggle.ppm";
-	char path_arq_ppm_out_inverte[] = "/home/felipe/GitHub/Processamento-imagem/imgs/inverte.ppm";
-	unsigned long len_fptr;
-	unsigned char * datas;
-
-	datas = read_image_input(path_arq_ppm, &len_fptr);
-	//print_data(datas, len_fptr);
-
-	unsigned char * data_gray = tonalidade_gray(datas, len_fptr);
-	unsigned char * data_gray_toggle = tonalidade_toggle_gray(datas, len_fptr);
-	unsigned char * data_inverte = inverte_image(datas, len_fptr);
-
-	grava_arquivo(path_arq_ppm_out_gray, data_gray, len_fptr);
-	grava_arquivo(path_arq_ppm_out_gray_toggle, data_gray_toggle, len_fptr);
-	grava_arquivo(path_arq_ppm_out_inverte, data_inverte, len_fptr);
-	
-	return 0;
 }
