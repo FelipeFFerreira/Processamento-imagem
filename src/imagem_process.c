@@ -4,14 +4,10 @@
 void print_data(unsigned char * data, unsigned int len)
 {
 	unsigned int i, k = 0;
-	for (i = 15; i < len; i++, k++) {
-		if (k < 2) printf("%d,  ", data[i]);
-		else {
-			printf("%d: ", data[i]);
-			k = -1;
-		}
-		if (i % 512 == 0) printf("\n");
+	for (i = 0; i < len; i++, k++) {
+		printf("%d. %c , %d\n", i, data[i], data[i]);
 	}
+	exit(1);
 }
 
 FILE * open_arquivo(char * str, char * modo) {
@@ -82,7 +78,7 @@ void config_params_date_aux(unsigned char * data_aux, unsigned char * data, unsi
 	}
 }
 
-unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img)
+unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img, unsigned int x)
 {
 	unsigned char * data_aux;
 	data_aux =  (unsigned char *) malloc(sizeof(unsigned char) * len_img);
@@ -91,13 +87,13 @@ unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img)
 		exit(1);
 	}
 
-	config_params_date_aux(data_aux, data, 15);
+	config_params_date_aux(data_aux, data, DEFAULT_HEADER_SIZE + x);
 
 	printf("Aplicando tonalidade gray!\n");
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
-	for (unsigned int i = 15; i < len_img; i += 3) {
+	for (unsigned int i = DEFAULT_HEADER_SIZE + x; i < len_img; i += 3) {
 		data_aux[i] = (int) ((0.299 * data[i]) + (0.587 * data[i + 1]) + (0.144 * data[i + 2])); //calcula o valor para conversão
 		data_aux[i + 1] = data_aux[i]; //copia o valor para
 		data_aux[i + 2] = data_aux[i];  //todas componentes
@@ -112,7 +108,7 @@ unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img)
 }
 
 
-unsigned char * inverte_image(unsigned char * data, unsigned int len_img)
+unsigned char * inverte_image(unsigned char * data, unsigned int len_img, unsigned int x)
 {
 	unsigned char * data_aux;
 	data_aux =  (unsigned char *) malloc(sizeof(unsigned char) * len_img);
@@ -128,7 +124,7 @@ unsigned char * inverte_image(unsigned char * data, unsigned int len_img)
 	#ifdef INSTALL_OMP
         #pragma omp parallel for
 	#endif
-	for (unsigned int i = len_img, j = 15; i > 14; i--, j++)
+	for (unsigned int i = len_img, j = DEFAULT_HEADER_SIZE + x; i > 14; i--, j++)
 	{
 		data_aux[j] = data[i];
 	}
@@ -138,7 +134,7 @@ unsigned char * inverte_image(unsigned char * data, unsigned int len_img)
 
 }
 
-unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img)
+unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img, unsigned largura, unsigned int x)
 {
 
 	unsigned char * data_aux;
@@ -156,8 +152,8 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
         #pragma omp parallel for
 	#endif
 	bool state_linha = true;
-	for (unsigned int i = 15; i < len_img; i += 3) {
-
+	for (unsigned int i = DEFAULT_HEADER_SIZE + x, k = 0; i < len_img; i += 3) {
+		k = i;
 		if (state_linha) {
 			data_aux[i] = (int) ((0.299 * data[i]) + (0.587 * data[i + 1]) + (0.144 * data[i + 2])); //calcula o valor para conversão
 			data_aux[i + 1] = data_aux[i]; //copia o valor para
@@ -169,14 +165,23 @@ unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_im
 	            data_aux[i + 2] = 255;
 			}
 
-			if ((i + 3) % (512 * 3) == 0) {
+			if (k > largura * 3) {
 				state_linha = false;
-				//printf("TROCA\n");
+				k = 0;
 			}
+			//if ((i + 3) % (largura * 3) == 0) {
+				//state_linha = false;
+				//printf("FALSE\n");
+			//}
+			//printf("TRUE\n");
 		}
 		else {
-			if ((i + 3) % (512 * 3) == 0) {
+			if (k > largura * 3) {
 				state_linha = true;
+				k = 0;
+			//if ((i + 3) % (largura * 3) == 0) {
+				//state_linha = true;
+				//printf("FALSE****************************************************************\n");
 			}
 		}
 	}

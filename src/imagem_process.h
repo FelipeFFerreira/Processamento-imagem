@@ -11,6 +11,7 @@
 	#include <omp.h>
 #endif // INSTALL_OMP
 
+#define DEFAULT_HEADER_SIZE 8
 
 void print_data(unsigned char * data, unsigned int len);
 
@@ -26,10 +27,10 @@ unsigned char * read_image_input(char * _arq, unsigned long * _len_fptr);
 
 void config_params_date_aux(unsigned char * data_aux, unsigned char * data, unsigned int len_header);
 
-unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img);
+unsigned char * tonalidade_gray(unsigned char * data, unsigned int len_img, unsigned int);
 
-unsigned char * inverte_image(unsigned char * data, unsigned int len_img);
+unsigned char * inverte_image(unsigned char * data, unsigned int len_img, unsigned int);
 
-unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img);
+unsigned char * tonalidade_toggle_gray(unsigned char * data, unsigned int len_img, unsigned int, unsigned int);
 
 #endif // _IMAGEM_PROCESS_H
